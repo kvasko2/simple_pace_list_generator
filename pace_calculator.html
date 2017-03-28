@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="./helpers.js"></script>
+    </head>
+    <body>
+        <div class="inputs">
+            <span id="distance-label">Race Distance</span>
+            <input type="text" id="distance">
+            <span>Unit</span>
+            <select id="units" onchange="updateUnits()">
+                <option value="km">Kilometers</option>
+                <option value="mi">Miles</option>
+            </select>
+            <span id="pace-label">Pace (min/unit)</span>
+            <input type="text" id="pace">
+            <button onclick="calculateUnitTimes()">Create Times List</button>
+        <div id="list"></div>
+        <script>
+            var listElement = document.getElementById('list');
+            var currentUnit = "km";
+
+            function createMarker(distance, paceInSeconds, parentElement){
+                var markerTimeInSeconds = distance * paceInSeconds;
+                var markerTime = secondsToTimeString(markerTimeInSeconds);
+
+                var newListElement = document.createElement("li");
+                newListElement.textContent = distance + currentUnit + ": " + markerTime;
+
+                parentElement.appendChild(newListElement)
+            }
+
+            function calculateUnitTimes(){
+                // Distance values.
+                var distanceElement = document.getElementById('distance');
+                var mileMarkers = [];
+                if (distanceElement.value === ''){
+                    alert('Please enter a Race Distance.');
+                    return;
+                }
+
+                var distance = parseFloat(distanceElement.value);
+                if (distance === NaN){
+                    alert('Race Distance must be a number, like 5 or 26.2.');
+                    return;
+                }
+                var half = distance/2;
+
+                // Pace values.
+                var paceElement = document.getElementById('pace');
+                if (paceElement.value === ''){
+                    alert('Please enter a Pace.');
+                    return;
+                }
+                var paceInSeconds = timeStringToSeconds(paceElement.value);
+                if (paceInSeconds === NaN){
+                    alert('Enter pace in minutes and secodns, like 9:00 or 5:45.');
+                    return;
+                }
+
+                var listElement = document.getElementById('list');
+                // Clear any previous lists.
+                while (listElement.firstChild){
+                    listElement.removeChild(listElement.firstChild);
+                }
+
+                var lastDistance = -1;
+                for (var i = 0; i < parseInt(distance); i++){
+                    let markerDist = i + 1;
+                    if (markerDist > half && lastDistance < half){
+                        createMarker(half, paceInSeconds, listElement);
+                    }
+
+                    createMarker(markerDist, paceInSeconds, listElement);
+
+                    lastDistance = markerDist;
+                }
+
+                if (lastDistance < distance){
+                    createMarker(distance, paceInSeconds, listElement);
+                }
+            }
+
+            function updateUnits(){
+                var dropdownElement = document.getElementById('units');
+                currentUnit = dropdownElement.value;
+                var distanceLabel = document.getElementById('distance-label');
+                distanceLabel.textContent = "Race Distance (" + currentUnit + ")";
+                var paceLabel = document.getElementById('pace-label');
+                paceLabel.textContent = "Pace (min/" + currentUnit + ")";
+            }
+
+            updateUnits();
+        </script>
+    </body>
+</html>
